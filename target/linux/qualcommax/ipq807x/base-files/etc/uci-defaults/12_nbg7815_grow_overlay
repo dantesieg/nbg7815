@@ -1,0 +1,19 @@
+#!/bin/sh
+# NBG7815: grow the ext4 overlay on mmcblk0p10 to fill the merged partition.
+# 11_nbg7815_storage enlarges p10 but keeps an existing filesystem at its old size.
+# Exit non-zero until the overlay is on p10 so uci-defaults retries on the next boot.
+
+. /lib/functions/system.sh
+
+[ "$(board_name)" = "zyxel,nbg7815" ] || exit 0
+
+P10="/dev/mmcblk0p10"
+
+grep -qs "^$P10 /overlay " /proc/mounts || exit 1
+
+command -v resize2fs >/dev/null 2>&1 || exit 0
+
+logger -t nbg7815-storage "growing $P10 to full partition size"
+resize2fs "$P10" >/dev/null 2>&1
+
+exit 0
